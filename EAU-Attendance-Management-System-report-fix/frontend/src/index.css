@@ -1,0 +1,112 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* EAU Attendance Automator Design System — Green Dominant */
+
+@layer base {
+  :root {
+    --background: 0 0% 97%;
+    --foreground: 0 0% 12%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 12%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 12%;
+
+    --primary: 104 27% 43%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 51 100% 50%;
+    --secondary-foreground: 0 0% 12%;
+
+    --muted: 0 0% 93%;
+    --muted-foreground: 0 0% 40%;
+
+    --accent: 349 70% 37%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 88%;
+    --input: 0 0% 88%;
+    --ring: 104 27% 43%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 104 27% 28%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 51 100% 50%;
+    --sidebar-primary-foreground: 0 0% 12%;
+    --sidebar-accent: 104 27% 22%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 104 20% 20%;
+    --sidebar-ring: 51 100% 50%;
+
+    /* Custom EAU tokens */
+    --eau-crimson: 349 70% 37%;
+    --eau-mustard: 51 100% 50%;
+    --eau-green: 104 27% 43%;
+    --eau-green-light: 104 27% 90%;
+    --eau-crimson-light: 349 70% 95%;
+    --eau-mustard-light: 51 100% 92%;
+    --eau-gradient-primary: linear-gradient(135deg, hsl(104 27% 43%), hsl(104 27% 28%));
+    --eau-shadow-card: 0 4px 24px -4px hsl(0 0% 0% / 0.08);
+    --eau-shadow-elevated: 0 8px 32px -8px hsl(0 0% 0% / 0.12);
+  }
+
+  .dark {
+    --background: 0 0% 8%;
+    --foreground: 0 0% 95%;
+    --card: 0 0% 12%;
+    --card-foreground: 0 0% 95%;
+    --popover: 0 0% 12%;
+    --popover-foreground: 0 0% 95%;
+    --primary: 104 27% 50%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 51 100% 50%;
+    --secondary-foreground: 0 0% 12%;
+    --muted: 0 0% 18%;
+    --muted-foreground: 0 0% 60%;
+    --accent: 349 70% 45%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 62% 30%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
+    --ring: 104 27% 50%;
+    --sidebar-background: 0 0% 10%;
+    --sidebar-foreground: 0 0% 95%;
+    --sidebar-primary: 104 27% 50%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 0 0% 15%;
+    --sidebar-accent-foreground: 0 0% 95%;
+    --sidebar-border: 0 0% 18%;
+    --sidebar-ring: 104 27% 50%;
+
+    --eau-crimson: 349 70% 45%;
+    --eau-mustard: 51 100% 50%;
+    --eau-green: 104 27% 50%;
+    --eau-green-light: 104 27% 20%;
+    --eau-crimson-light: 349 70% 15%;
+    --eau-mustard-light: 51 100% 15%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display;
+  }
+}
