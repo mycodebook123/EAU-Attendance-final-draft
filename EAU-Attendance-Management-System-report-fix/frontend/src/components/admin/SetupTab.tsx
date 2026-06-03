@@ -110,6 +110,7 @@ interface Offering {
   teacher: number | null;
   teacher_name: string | null;
   semester_label: string;
+  session_type: string;
 }
 interface Course {
   id: number;
@@ -1868,8 +1869,10 @@ const OfferingsPanel = ({
     course_id: "",
     section_id: "",
     teacher_id: "",
+    session_type: "theory",
   });
   const [editTeacher, setEditTeacher] = useState("");
+  const [editSessionType, setEditSessionType] = useState("theory");
   const [saving, setSaving] = useState(false);
 
   const filteredSections = sections.filter(
@@ -1887,11 +1890,12 @@ const OfferingsPanel = ({
         course_id: parseInt(form.course_id),
         section_id: parseInt(form.section_id),
         teacher_id: form.teacher_id ? parseInt(form.teacher_id) : undefined,
+        session_type: form.session_type,
       });
       setOfferings((p: Offering[]) => [...p, r.data]);
       toast.success("Offering created!");
       setOpen(false);
-      setForm({ course_id: "", section_id: "", teacher_id: "" });
+      setForm({ course_id: "", section_id: "", teacher_id: "", session_type: "theory" });
     } catch (e: any) {
       toast.error(e?.response?.data?.error || "Failed");
     } finally {
@@ -1905,6 +1909,7 @@ const OfferingsPanel = ({
     try {
       const r = await updateOfferingApi(editing.id, {
         teacher_id: editTeacher ? parseInt(editTeacher) : undefined,
+        session_type: editSessionType,
       });
       setOfferings((p: Offering[]) =>
         p.map((o: Offering) => (o.id === editing.id ? r.data : o)),
@@ -2028,6 +2033,9 @@ const OfferingsPanel = ({
                     {o.semester_label}
                   </td>
                   <td className="px-6 py-4 text-muted-foreground">
+                    <span className="text-xs font-mono bg-muted px-1.5 py-0.5 rounded mr-2">
+                        {o.session_type === "practical" ? "Practical" : "Theory"}
+                      </span>
                     {o.teacher_name || (
                       <span className="text-destructive/70 text-xs">
                         Unassigned
@@ -2040,6 +2048,7 @@ const OfferingsPanel = ({
                         onClick={() => {
                           setEditing(o);
                           setEditTeacher(o.teacher ? String(o.teacher) : "");
+                          setEditSessionType(o.session_type || "theory");
                           setEditOpen(true);
                         }}
                         className="p-1.5 rounded-md hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"

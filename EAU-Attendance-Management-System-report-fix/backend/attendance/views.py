@@ -117,11 +117,8 @@ def apply_department_scope(qs, user, dept_field='department_id'):
         # Dean sees everything in their programme
         return qs.filter(programme_id__in=prog_ids)
     if user.role == 'dept_head' and user.managed_department_id:
-        # Dept head sees courses in their dept OR unassigned courses in their programme
-        return qs.filter(
-            Q(**{dept_field: user.managed_department_id}) |
-            Q(**{dept_field + '__isnull': True}, programme_id__in=prog_ids)
-        )
+        # Dept head ONLY sees courses explicitly assigned to their department
+        return qs.filter(**{dept_field: user.managed_department_id})
     return qs.none()
 
 
@@ -627,6 +624,14 @@ class CourseDetailView(APIView):
         if 'department_id' in request.data:
             did = request.data['department_id']
             course.department = Department.objects.filter(id=did).first() if did else None
+        if 'programme_id' in request.data:
+            pid = request.data['programme_id']
+            if pid:
+                try:
+                    course.programme = Programme.objects.get(id=pid)
+                except Programme.DoesNotExist:
+                    return Response({'error': 'Programme not found'},
+                                    status=status.HTTP_404_NOT_FOUND)
         course.save()
         return Response(CourseSerializer(course).data)
 
@@ -923,6 +928,24 @@ class StudentDetailView(APIView):
                       'parent_email', 'parent_telegram', 'is_active']:
             if field in request.data:
                 setattr(student, field, request.data[field])
+        # Allow editing student_id (must remain unique)
+        if 'student_id' in request.data:
+            new_id = request.data['student_id'].strip()
+            if new_id and Student.objects.exclude(pk=student.pk).filter(student_id=new_id).exists():
+                return Response({'error': 'A student with this ID already exists.'},
+                                status=status.HTTP_400_BAD_REQUEST)
+            student.student_id = new_id
+        # Allow moving student to a different programme
+        if 'programme_id' in request.data:
+            pid = request.data['programme_id']
+            if pid:
+                try:
+                    student.programme = Programme.objects.get(id=pid)
+                except Programme.DoesNotExist:
+                    return Response({'error': 'Programme not found'},
+                                    status=status.HTTP_404_NOT_FOUND)
+            else:
+                student.programme = None
         student.save()
         return Response(StudentSerializer(student).data)
 
@@ -1143,8 +1166,11 @@ class CourseOfferingListView(APIView):
             except User.DoesNotExist:
                 return Response({'error': 'Teacher not found'},
                                 status=status.HTTP_404_NOT_FOUND)
+        session_type = request.data.get('session_type', 'theory')
         offering, created = CourseOffering.objects.get_or_create(
-            course=course, section=section, defaults={'teacher': teacher})
+            course=course, section=section, session_type=session_type,
+            defaults={'teacher': teacher}
+        )
         if not created and teacher:
             offering.teacher = teacher
             offering.save()
@@ -1163,11 +1189,17 @@ class CourseOfferingDetailView(APIView):
         except CourseOffering.DoesNotExist:
             return Response({'error': 'Not found'}, status=status.HTTP_404_NOT_FOUND)
         if 'teacher_id' in request.data:
-            try:
-                offering.teacher = User.objects.get(id=request.data['teacher_id'])
-            except User.DoesNotExist:
-                return Response({'error': 'Teacher not found'},
-                                status=status.HTTP_404_NOT_FOUND)
+            tid = request.data['teacher_id']
+            if tid:
+                try:
+                    offering.teacher = User.objects.get(id=tid)
+                except User.DoesNotExist:
+                    return Response({'error': 'Teacher not found'},
+                                    status=status.HTTP_404_NOT_FOUND)
+            else:
+                offering.teacher = None
+        if 'session_type' in request.data:
+            offering.session_type = request.data['session_type']
         offering.save()
         return Response(CourseOfferingSerializer(offering).data)
 
@@ -1665,6 +1697,12 @@ class UserDetailView(APIView):
         for field in ['first_name', 'last_name', 'email', 'role', 'staff_id']:
             if field in request.data:
                 setattr(user, field, request.data[field])
+        if 'username' in request.data:
+            new_username = request.data['username'].strip()
+            if new_username and User.objects.exclude(pk=user.pk).filter(username=new_username).exists():
+                return Response({'error': 'A user with this username already exists.'},
+                                status=status.HTTP_400_BAD_REQUEST)
+            user.username = new_username
         if request.data.get('password'):
             user.password = make_password(request.data['password'])
         if 'managed_programme_id' in request.data:

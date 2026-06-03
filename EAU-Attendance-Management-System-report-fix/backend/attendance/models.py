@@ -213,11 +213,21 @@ class Enrollment(models.Model):
 # ATTENDANCE
 # ─────────────────────────────────────────
 class CourseOffering(models.Model):
+    SESSION_TYPE_CHOICES = (
+        ('theory',    'Theory'),
+        ('practical', 'Practical'),
+    )
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='offerings')
     section = models.ForeignKey(Section, on_delete=models.CASCADE, related_name='offerings')
     teacher = models.ForeignKey(
         User, on_delete=models.SET_NULL, null=True, related_name='offerings'
     )
+    session_type = models.CharField(
+        max_length=15, choices=SESSION_TYPE_CHOICES, default='theory'
+    )
+
+    class Meta:
+        unique_together = ('course', 'section', 'session_type')
 
     def __str__(self):
         return f"{self.course.name} – {self.section} ({self.teacher})"

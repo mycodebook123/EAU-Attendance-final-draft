@@ -103,9 +103,11 @@ const StudentsTab = ({ programmes, scopeParams = {} }: StudentsTabProps) => {
   const [editForm, setEditForm] = useState({
     first_name: "",
     last_name: "",
+    student_id: "",
     email: "",
     parent_email: "",
     parent_telegram: "",
+    programme_id: "",
   });
   const [saving, setSaving] = useState(false);
 
@@ -192,12 +194,16 @@ const StudentsTab = ({ programmes, scopeParams = {} }: StudentsTabProps) => {
 
   const openEdit = (student: Student) => {
     setEditStudent(student);
+    // Find programme id from programmes list by matching name
+    const prog = programmes.find((p) => p.name === student.programme_name);
     setEditForm({
       first_name: student.first_name,
       last_name: student.last_name,
+      student_id: student.student_id,
       email: student.email,
       parent_email: student.parent_email || "",
       parent_telegram: student.parent_telegram || "",
+      programme_id: prog ? String(prog.id) : "",
     });
     setEditOpen(true);
   };
@@ -206,9 +212,21 @@ const StudentsTab = ({ programmes, scopeParams = {} }: StudentsTabProps) => {
     if (!editStudent) return;
     setSaving(true);
     try {
-      await updateStudentApi(editStudent.id, editForm);
+      const payload: any = {
+        first_name: editForm.first_name,
+        last_name: editForm.last_name,
+        student_id: editForm.student_id,
+        email: editForm.email,
+        parent_email: editForm.parent_email,
+        parent_telegram: editForm.parent_telegram,
+      };
+      if (editForm.programme_id) payload.programme_id = parseInt(editForm.programme_id);
+      await updateStudentApi(editStudent.id, payload);
       setStudents((prev) =>
-        prev.map((s) => (s.id === editStudent.id ? { ...s, ...editForm } : s)),
+        prev.map((s) => (s.id === editStudent.id ? { ...s, ...editForm,
+          student_id: editForm.student_id,
+          programme_name: programmes.find((p) => String(p.id) === editForm.programme_id)?.name || s.programme_name,
+        } : s)),
       );
       toast.success("Student updated!");
       setEditOpen(false);
@@ -569,6 +587,35 @@ const StudentsTab = ({ programmes, scopeParams = {} }: StudentsTabProps) => {
                   className="w-full border border-input rounded-lg px-3 py-2 text-sm bg-background outline-none focus:ring-2 focus:ring-ring"
                 />
               </div>
+            </div>
+            <div className="space-y-1.5">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                University ID
+              </p>
+              <input
+                value={editForm.student_id}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, student_id: e.target.value })
+                }
+                className="w-full border border-input rounded-lg px-3 py-2 text-sm bg-background outline-none focus:ring-2 focus:ring-ring"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                Programme
+              </p>
+              <select
+                value={editForm.programme_id}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, programme_id: e.target.value })
+                }
+                className="w-full border border-input rounded-lg px-3 py-2 text-sm bg-background outline-none focus:ring-2 focus:ring-ring"
+              >
+                <option value="">— Select programme —</option>
+                {programmes.map((p) => (
+                  <option key={p.id} value={p.id}>{p.name}</option>
+                ))}
+              </select>
             </div>
             <div className="space-y-1.5">
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">

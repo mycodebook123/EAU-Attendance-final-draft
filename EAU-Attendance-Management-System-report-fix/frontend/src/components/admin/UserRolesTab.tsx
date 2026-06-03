@@ -221,6 +221,8 @@ const UserRolesTab = () => {
   const [editOpen, setEditOpen] = useState(false);
   const [editUser, setEditUser] = useState<User | null>(null);
   const [editForm, setEditForm] = useState({
+    username: "",
+    staff_id: "",
     first_name: "",
     last_name: "",
     email: "",
@@ -283,6 +285,8 @@ const UserRolesTab = () => {
   const openEdit = (user: User) => {
     setEditUser(user);
     setEditForm({
+      username: user.username,
+      staff_id: user.staff_id || "",
       first_name: user.first_name,
       last_name: user.last_name,
       email: user.email,
@@ -300,6 +304,8 @@ const UserRolesTab = () => {
     setSaving(true);
     try {
       const payload: any = {
+        username: editForm.username,
+        staff_id: editForm.staff_id,
         first_name: editForm.first_name,
         last_name: editForm.last_name,
         email: editForm.email,
@@ -623,6 +629,29 @@ const UserRolesTab = () => {
             <DialogTitle className="font-display">Edit User</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-2">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                  Username
+                </p>
+                <input
+                  value={editForm.username}
+                  onChange={(e) => setEditForm({ ...editForm, username: e.target.value })}
+                  className="w-full border border-input rounded-lg px-3 py-2 text-sm bg-background outline-none focus:ring-2 focus:ring-ring"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                  Staff ID
+                </p>
+                <input
+                  value={editForm.staff_id}
+                  onChange={(e) => setEditForm({ ...editForm, staff_id: e.target.value })}
+                  placeholder="e.g. TCH001"
+                  className="w-full border border-input rounded-lg px-3 py-2 text-sm bg-background outline-none focus:ring-2 focus:ring-ring"
+                />
+              </div>
+            </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">

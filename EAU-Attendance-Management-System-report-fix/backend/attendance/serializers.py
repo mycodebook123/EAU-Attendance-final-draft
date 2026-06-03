@@ -44,7 +44,7 @@ class UserSerializer(serializers.ModelSerializer):
         return obj.get_full_name()
 
     def get_managed_department_programme(self, obj):
-        """Returns the programme_id of the dept_head's department — used for scoping."""
+        """Returns the programme_id of the dept_head's department -- used for scoping."""
         if obj.role == 'dept_head' and obj.managed_department:
             return obj.managed_department.programme_id
         return None
@@ -117,7 +117,7 @@ class SemesterSerializer(serializers.ModelSerializer):
         ]
 
     def get_label(self, obj):
-        return f"{obj.academic_year.name} — Semester {obj.number}"
+        return f"{obj.academic_year.name} -- Semester {obj.number}"
 
     def get_section_count(self, obj):
         return obj.sections.count()
@@ -219,7 +219,7 @@ class CourseOfferingSerializer(serializers.ModelSerializer):
             'total_credit_hours', 'minimum_required_hours',
             'section', 'section_name', 'section_year',
             'programme_name', 'department_name',
-            'teacher', 'teacher_name', 'semester_label'
+            'teacher', 'teacher_name', 'semester_label', 'session_type'
         ]
 
     def get_teacher_name(self, obj):

@@ -199,8 +199,9 @@ export const createOfferingApi = (data: {
   course_id: number;
   section_id: number;
   teacher_id?: number;
+  session_type?: string;
 }) => api.post("/offerings/", data);
-export const updateOfferingApi = (id: number, data: { teacher_id?: number }) =>
+export const updateOfferingApi = (id: number, data: { teacher_id?: number; session_type?: string }) =>
   api.patch(`/offerings/${id}/`, data);
 export const deleteOfferingApi = (id: number) =>
   api.delete(`/offerings/${id}/`);

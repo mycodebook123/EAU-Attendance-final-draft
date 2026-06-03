@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Plus, Pencil, Trash2, Upload, Download, Search, X } from "lucide-react";
 import { toast } from "sonner";
-import { createCourseApi, updateCourseApi, deleteCourseApi } from "@/api/axios";
+import { createCourseApi, updateCourseApi, deleteCourseApi, getDepartmentsApi } from "@/api/axios";
 import * as XLSX from "xlsx";
 
 interface Course {
@@ -30,6 +30,12 @@ interface Programme {
   name: string;
   code?: string;
   duration_years: number;
+}
+
+interface Department {
+  id: number;
+  name: string;
+  programme_name?: string;
 }
 
 interface CoursesTabProps {
@@ -94,7 +100,10 @@ const CoursesTab = ({
     total_credit_hours: "",
     year: "1",
     semester: "1",
+    programme_id: "",
+    department_id: "",
   });
+  const [editDepartments, setEditDepartments] = useState<Department[]>([]);
   const [addForm, setAddForm] = useState({
     name: "",
     code: "",
@@ -138,13 +147,24 @@ const CoursesTab = ({
 
   const openEdit = (course: Course) => {
     setEditCourse(course);
+    const prog = programmes.find((p) => p.name === course.programme_name);
     setEditForm({
       name: course.name,
       code: course.code || "",
       total_credit_hours: course.total_credit_hours,
       year: String(course.year),
       semester: String(course.semester || 1),
+      programme_id: prog ? String(prog.id) : "",
+      department_id: "",
     });
+    // Load departments for this programme
+    if (prog) {
+      getDepartmentsApi({ programme: prog.id, active_only: true })
+        .then((r) => setEditDepartments(r.data || []))
+        .catch(() => setEditDepartments([]));
+    } else {
+      setEditDepartments([]);
+    }
     setEditOpen(true);
   };
 
@@ -152,7 +172,15 @@ const CoursesTab = ({
     if (!editCourse) return;
     setSaving(true);
     try {
-      const res = await updateCourseApi(editCourse.id, editForm);
+      const payload: any = {
+        name: editForm.name,
+        code: editForm.code,
+        total_credit_hours: parseFloat(editForm.total_credit_hours),
+        year: parseInt(editForm.year),
+      };
+      if (editForm.programme_id) payload.programme_id = parseInt(editForm.programme_id);
+      payload.department_id = editForm.department_id ? parseInt(editForm.department_id) : null;
+      const res = await updateCourseApi(editCourse.id, payload);
       updateLocal(
         courses.map((c) =>
           c.id === editCourse.id ? { ...c, ...res.data } : c,
@@ -546,6 +574,51 @@ const CoursesTab = ({
                   <option value="2">Semester 2</option>
                 </select>
               </div>
+            </div>
+            <div className="space-y-1.5">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                Programme
+              </p>
+              <select
+                value={editForm.programme_id}
+                onChange={(e) => {
+                  const pid = e.target.value;
+                  setEditForm({ ...editForm, programme_id: pid, department_id: "" });
+                  if (pid) {
+                    getDepartmentsApi({ programme: parseInt(pid), active_only: true })
+                      .then((r) => setEditDepartments(r.data || []))
+                      .catch(() => setEditDepartments([]));
+                  } else {
+                    setEditDepartments([]);
+                  }
+                }}
+                className="w-full border border-input rounded-lg px-3 py-2 text-sm bg-background outline-none focus:ring-2 focus:ring-ring"
+              >
+                <option value="">— Select programme —</option>
+                {programmes.map((p) => (
+                  <option key={p.id} value={p.id}>{p.name}</option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-1.5">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                Department <span className="normal-case font-normal">(optional)</span>
+              </p>
+              <select
+                value={editForm.department_id}
+                onChange={(e) => setEditForm({ ...editForm, department_id: e.target.value })}
+                className="w-full border border-input rounded-lg px-3 py-2 text-sm bg-background outline-none focus:ring-2 focus:ring-ring"
+              >
+                <option value="">— None / Unassigned —</option>
+                {editDepartments.map((d) => (
+                  <option key={d.id} value={d.id}>{d.name}</option>
+                ))}
+              </select>
+              {editDepartments.length === 0 && editForm.programme_id && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  No departments for this programme yet.
+                </p>
+              )}
             </div>
             <div className="flex justify-end gap-2 pt-2">
               <Button variant="outline" onClick={() => setEditOpen(false)}>
