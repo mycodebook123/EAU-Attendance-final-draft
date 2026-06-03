@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE_URL = "http://127.0.0.1:8000/api";
+const API_BASE_URL = "http://10.252.8.33:8000/api";
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: { "Content-Type": "application/json" },
@@ -201,8 +201,10 @@ export const createOfferingApi = (data: {
   teacher_id?: number;
   session_type?: string;
 }) => api.post("/offerings/", data);
-export const updateOfferingApi = (id: number, data: { teacher_id?: number; session_type?: string }) =>
-  api.patch(`/offerings/${id}/`, data);
+export const updateOfferingApi = (
+  id: number,
+  data: { teacher_id?: number; session_type?: string },
+) => api.patch(`/offerings/${id}/`, data);
 export const deleteOfferingApi = (id: number) =>
   api.delete(`/offerings/${id}/`);
 export const getOfferingStudentsApi = (offeringId: number) =>
@@ -333,7 +335,9 @@ export const downloadReportApi = async (
     throw new Error("Session expired. Please log in again.");
   }
   const url =
-    type === "offering" ? `/reports/offering/${id}/` : `/reports/student/${id}/`;
+    type === "offering"
+      ? `/reports/offering/${id}/`
+      : `/reports/student/${id}/`;
   const response = await api.get(url, {
     params: {
       rpt_format: format,
@@ -346,9 +350,10 @@ export const downloadReportApi = async (
     responseType: "blob",
   });
 
-  const xlsxMime = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+  const xlsxMime =
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
   const blobType = format === "pdf" ? "application/pdf" : xlsxMime;
-  const fileExt  = format === "pdf" ? "pdf" : "xlsx";
+  const fileExt = format === "pdf" ? "pdf" : "xlsx";
   const blob = new Blob([response.data], { type: blobType });
   const objectUrl = URL.createObjectURL(blob);
   const link = document.createElement("a");
@@ -394,9 +399,10 @@ export const downloadSummaryReportApi = async (
     },
     responseType: "blob",
   });
-  const xlsxMime2 = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+  const xlsxMime2 =
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
   const blobType2 = format === "pdf" ? "application/pdf" : xlsxMime2;
-  const fileExt2  = format === "pdf" ? "pdf" : "xlsx";
+  const fileExt2 = format === "pdf" ? "pdf" : "xlsx";
   const blob = new Blob([response.data], { type: blobType2 });
   const objectUrl = URL.createObjectURL(blob);
   const link = document.createElement("a");
